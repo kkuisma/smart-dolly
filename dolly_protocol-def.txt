@@ -1,0 +1,70 @@
+<sync><length><tgtobj><property><cmd>:<value>
+Examples:
+X<0x04>DCG:  	   	- request, get dolly system prop "C" / interval
+X<0x05>LSS:1    	- request, set motor 2 prop "S" to 1
+X<0x07>MES:200  	- request, set motor 0 prop "E" to 200
+X<0x04>NBG:     	- request, get motor 1 prop "B"
+X<0x08>CES:5000 	- request, set camera prop "E" to 5000
+X<0x09>CAH:10000	- response to get, camera interval is 10000 (from device to phone)
+X<0x06>MBT:12		- response to set, motor 0 speed is set to 12 mm/sec (from device to phone)
+X<0x04>DBG:			- request, get ping from the dolly/system
+X<0x04>DBH:			- response to get, ping from the dolly/system
+
+All other bytes are ASCII, but length is integer
+<'X'><0xnn><'D'|'C'|'L'|'M'|'N'><'A'|'B'|'C'|...|'V'><'G'|'H'|'S'|'T'><':'><'0'...'z'>
+
+sync (1 byte) - ASCII:
+	- 'X'
+
+length (1 byte) - integer:
+	- bytes after the len byte, 0x04..0xF0
+
+tgtobj (1 byte) - ASCII:
+	- 'D' = dolly / system
+	- 'C' = camera
+	- 'M' = motor 0
+	- 'N' = motor 1
+	- 'L' = motor 2
+
+property (1 byte) - ASCII:
+- dolly:
+	- 'A' = state, value = "0"/stopped, "1"/running
+	- 'B' = ping, no value, allowed only with cmd 'H', from device to phone
+	- 'C' = interval in ms, value = "0"..."3600000" (60*60*1000 => one hour)
+	- 'D' = total time in ms (total time the run will take)
+	- 'E' = elapsed time in ms
+	- 'F' = total shots (total shots to be taken in one run)
+	- 'G' = shots taken
+	- 'H' = max distance in mm (dolly max - auto measured?)
+	- 'I' = total distance in mm (given total motion in one run)
+	- 'J' = current position in mm (from the home position)
+	- 'K' = motion per cycle in mm (motion between two shots)
+
+- camera:
+	- 'A' = exposure time in ms, value = "50".."30000"
+	- 'B' = post exposure time in ms, value = "0".."1000" (max?)
+	- 'C' = focus/wake-up time in ms, value = "0".."10000" (max?)
+	- 'D' = exposure mode, value = "BULB" or "CAMERA" (or "0" / "1"?)
+	- 'E' = focal lenght in mm, value = "10".."5000" (min and max??)
+
+- motor:
+	- 'A' = steps per unit (per mm), value = "1".."N"
+	- 'B' = speed in mm/sec, value = "0".."100" (what is max?)
+	- 'C' = ramp in ms, value = "0".."5000" (max?)
+	- 'D' = post time in ms, value = "0".."1000" (max?)
+	- 'E' = direction, value = "LEFT" or "RIGHT" (or "0" / "1"?)
+
+cmd (1 byte):
+	- 'G' = get request  (from phone to device)
+	- 'H' = get response (from device to phone)
+	- 'S' = set request  (from phone to device)
+	- 'T' = set response (from device to phone)
+
+value separator (1 byte) - ASCII:
+	- ':'
+
+value (<len> bytes) in ASCII
+	- e.g. 250 is sent as 3 bytes: "2", "5", "0"
+
+checksum (2 bytes) - not supported yet! Is this needed??
+	- 16-bit Fletcher's checksum
